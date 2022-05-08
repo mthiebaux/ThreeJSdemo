@@ -83,17 +83,21 @@ dirLight.shadow.radius = shadow_radius;
 dirLight.shadow.bias = shadow_bias;
 dirLight.shadow.mapSize.width = shadow_resolution;
 dirLight.shadow.mapSize.height = shadow_resolution;
-dirLight.shadow.camera.near = 4.0;
-dirLight.shadow.camera.far = 20.0;
+dirLight.shadow.camera.near = 5.0;
+dirLight.shadow.camera.far = 18.0;
 
 scene.add( dirLight );
 
-// const dlh_radius = 1.0;
-// scene.add( new THREE.DirectionalLightHelper( dirLight, dlh_radius ) );
-// scene.add( new THREE.CameraHelper( dirLight.shadow.camera ) );
+const dlh_radius = 1.0;
+const dir_light_helper = new THREE.DirectionalLightHelper( dirLight, dlh_radius );
+dir_light_helper.visible = false;
+scene.add( dir_light_helper );
 
-// Light.shadowCameraVisible = true;
-// child.visible = false;
+const dir_shadow_helper = new THREE.CameraHelper( dirLight.shadow.camera );
+dir_shadow_helper.visible = false;
+scene.add( dir_shadow_helper );
+
+///////////////////
 
 let spot_intensity = 2.0;
 let spot_distance = 15.0;
@@ -102,29 +106,32 @@ let spot_penumbra = 0.25;
 let spot_decay = 1.0;
 
 const spotLight = new THREE.SpotLight(
-	0xffeedd, spot_intensity, spot_distance, spot_angle, spot_penumbra, spot_decay );
+	0xffeedd, spot_intensity, spot_distance,
+	spot_angle, spot_penumbra, spot_decay
+);
 spotLight.position.set( 4.0, 6.0, 5.0 );
 spotLight.target.position.set( 0.0, 0.0, 0.0 );
 spotLight.castShadow = true;
-
-// spotLight.shadowCameraNear = 6;
-// spotLight.shadowCameraFar = 13;
-// spotLight.shadowCameraVisible = true; // To display the light's direction
 
 spotLight.shadow.radius = shadow_radius;
 spotLight.shadow.bias = shadow_bias;
 spotLight.shadow.mapSize.width = shadow_resolution;
 spotLight.shadow.mapSize.height = shadow_resolution;
-spotLight.shadow.camera.near = 1.0;
+spotLight.shadow.camera.near = 4.0;
 spotLight.shadow.camera.far = 15.0;
 spotLight.shadow.camera.fov = 45.0;
 
 scene.add( spotLight );
 
-// scene.add( new THREE.SpotLightHelper( spotLight ) );
-// scene.add( new THREE.CameraHelper( spotLight.shadow.camera ) );
+const spot_light_helper = new THREE.SpotLightHelper( spotLight );
+spot_light_helper.visible = false;
+scene.add( spot_light_helper );
 
-///////////////////
+const spot_shadow_helper = new THREE.CameraHelper( spotLight.shadow.camera );
+spot_shadow_helper.visible = false;
+scene.add( spot_shadow_helper );
+
+////////////////////////////////////////////////////////////////////////////////
 
 const plane = new THREE.Mesh(
 	new THREE.PlaneGeometry( 10.0, 10.0, 10, 10 ),
@@ -306,6 +313,19 @@ window.addEventListener(
 					obj_controls.setSpace( 'world' );
 				}
 				break;
+
+			case 'KeyL':
+
+				if( dir_shadow_helper.visible )	{
+					dir_shadow_helper.visible = false;
+					spot_shadow_helper.visible = false;
+				}
+				else	{
+					dir_shadow_helper.visible = true;
+					spot_shadow_helper.visible = true;
+				}
+				break;
+
 		}
 	}
 );
