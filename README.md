@@ -64,3 +64,4 @@ The W key will toggle between the object's world and local coordinate systems.
 
 Clicking on the background will disable the gizmo and activate the camera's controller.
 
+The L key will toggle the light source shadow helpers.
