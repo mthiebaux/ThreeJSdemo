@@ -3,6 +3,9 @@
 
  **Three.js Demo with Object Manipulation and Shadows**
 
+<img src="./images/threejs_demo.png" width="500">
+
+
 Exercising a variety of interesting packaged features in ThreeJS:
 
 * built-in geometries
@@ -50,9 +53,6 @@ Use the server.js file in place of the existing app.js to start node, and enter 
  │                                   │
  └───────────────────────────────────┘
 ```
-
-<img src="./images/threejs_demo.png" width="500">
-
 
 ## *Instructions*
 
