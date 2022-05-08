@@ -56,11 +56,11 @@ Use the server.js file in place of the existing app.js to start node, and enter 
 
 ## *Instructions*
 
-Clicking on an object will activate it's transformation gizmo.
+Clicking on an object will activate its transformation gizmo.
 
-Keyboard keys T, R, and S will switch between translate, rotate, and scale.
+Keyboard keys T, R, and S will switch between translate, rotate, and scale operations.
 
-The W key will toggle between the object's world and local coordinate systems.
+The W key will toggle the gizmo between the object's world and local coordinate systems.
 
 Clicking on the background will disable the gizmo and activate the camera's controller.
 
