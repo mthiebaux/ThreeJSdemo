@@ -27,11 +27,14 @@ renderer.setSize( window.innerWidth, window.innerHeight );
 renderer.setPixelRatio( window.devicePixelRatio );
 renderer.setClearColor( 0x001144 );
 renderer.shadowMap.enabled = true;
-
-// renderer.shadowMap.type = THREE.PCFSoftShadowMap
-// renderer.shadowMap.type = THREE.BasicShadowMap
-// renderer.shadowMap.type = THREE.PCFShadowMap    // default ??
-// renderer.shadowMap.type = THREE.VSMShadowMap
+/*
+// unable to change these on the fly:
+	THREE.BasicShadowMap
+	THREE.PCFShadowMap (default)
+	THREE.PCFSoftShadowMap
+	THREE.VSMShadowMap
+*/
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
 document.body.appendChild( renderer.domElement );
 
@@ -63,9 +66,6 @@ let shadow_bias = 0.00001;
 // dirLight.shadow.blurSamples : Integer... The amount of samples to use when blurring a VSM shadow map.
 // dirLight.normalBias : Float... The default is 0. Increasing this value can be used to reduce shadow acne
 
-// dirLight.position.set(5, 0, 5);
-// dirLight.target.position.set(0, 0, 0);
-// dirLight.castShadow = true;
 // dirLight.shadowDarkness = 0.5;
 // dirLight.shadowCameraNear = 1.0;
 // dirLight.shadowCameraFar = 15.0;
@@ -74,9 +74,9 @@ let shadow_bias = 0.00001;
 // dirLight.shadowCameraTop = 5;
 // dirLight.shadowCameraBottom = -5;
 
-
 const dirLight = new THREE.DirectionalLight( 0xddeeff, 1 );
 dirLight.position.set( -2.0, 5.0, -10.0 );
+dirLight.target.position.set( 0.0, 0.0, 0.0 );
 dirLight.castShadow = true;
 
 dirLight.shadow.radius = shadow_radius;
@@ -325,6 +325,48 @@ window.addEventListener(
 					spot_shadow_helper.visible = true;
 				}
 				break;
+
+/*
+// these on-the-fly changes to the shadow algorithm do not work, something missing?
+			case 'Digit1':
+
+// done when changing resolution:
+	dirLight.shadow.map.dispose(); // important
+	dirLight.shadow.map = null;
+	spotLight.shadow.map.dispose();
+	spotLight.shadow.map = null;
+
+				renderer.shadowMap.type = THREE.BasicShadowMap;
+
+				renderer.shadowMap.needsUpdate = true;
+				renderer.state.reset();
+				break;
+
+			case 'Digit2':
+
+	dirLight.shadow.map.dispose(); // important
+	dirLight.shadow.map = null;
+	spotLight.shadow.map.dispose();
+	spotLight.shadow.map = null;
+
+				renderer.shadowMap.type = THREE.PCFShadowMap;
+				renderer.shadowMap.needsUpdate = true;
+				renderer.state.reset();
+				break;
+
+			case 'Digit3':
+
+				renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+				renderer.shadowMap.needsUpdate = true;
+				renderer.state.reset();
+				break;
+
+			case 'Digit4':
+
+				renderer.shadowMap.type = THREE.VSMShadowMap;
+				renderer.state.reset();
+				break;
+*/
 
 		}
 	}
