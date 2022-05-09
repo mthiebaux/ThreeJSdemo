@@ -318,11 +318,16 @@ window.addEventListener(
 
 				if( dir_shadow_helper.visible )	{
 					dir_shadow_helper.visible = false;
+					spot_shadow_helper.visible = true;
+				}
+				else
+				if( spot_shadow_helper.visible )	{
+					dir_shadow_helper.visible = false;
 					spot_shadow_helper.visible = false;
 				}
 				else	{
 					dir_shadow_helper.visible = true;
-					spot_shadow_helper.visible = true;
+					spot_shadow_helper.visible = false;
 				}
 				break;
 
