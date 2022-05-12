@@ -65,3 +65,10 @@ The W key will toggle the gizmo between the object's world and local coordinate 
 Clicking on the background will disable the gizmo and activate the camera's controller.
 
 The L key will cycle the light source shadow helpers.
+
+
+## *Lights, Materials, Shaders*
+
+<img src="./images/snapshot.png" width="500">
+
+tba
