@@ -41,7 +41,7 @@ This package consists of 3 source files which should be dumped directly into a p
 ./server.js
 ```
 
-Use the server.js file in place of the existing app.js to start node, and enter the provided localhost URL in your browser:
+Use the *server.js* file in place of the existing *app.js* to start node, and enter the provided localhost URL in your browser:
 
 ```
 > node server.js
@@ -50,6 +50,25 @@ Use the server.js file in place of the existing app.js to start node, and enter 
  │   Express Server:                 │
  │                                   │
  │       http://localhost:8080       │
+ │                                   │
+ └───────────────────────────────────┘
+```
+
+Alternatively, using the *tunnel.js* server file, node will generate a sharable localtunnel URL for access from the outside. This requires an extra module install:
+
+```
+> npm install localtunnel
+> node tunnel.js
+```
+
+Node will now print out the usual localhost and port, followed by a unique one-time URL viable for third party access until the server is terminated:
+
+```
+ ┌───────────────────────────────────┐
+ │                                   │
+ │   Tunnnel Server:                 │
+ │                                   │
+ │       https://ripe-years-love-209-6-243-197.loca.lt
  │                                   │
  └───────────────────────────────────┘
 ```
