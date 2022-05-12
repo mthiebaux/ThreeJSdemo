@@ -33,7 +33,7 @@ Referenced from http://127.0.0.1:3000/client.js
 
 ## *Demo Package*
 
-This package consists of 3 source files which should be dumped directly into a pre-installed Threejs-Boilerplate setup:
+This package consists of 3 primary source files which should be dumped directly into a pre-installed Threejs-Boilerplate setup:
 
 ```
 ./public/index.html
