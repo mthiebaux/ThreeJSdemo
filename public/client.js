@@ -15,6 +15,14 @@ const stats = Stats();
 const gui_menu = new GUI();
 gui_menu.close();
 
+////////////////////////////////////////////////////////////////////////////////
+// COLORS FOR LIGHTING
+
+const col_rear = 0x554433;
+const col_spot = 0xfff7aa;
+const col_sky = 0x7f8f9f;
+const col_ground = 0x241f1d; // for hemisphere light
+
 ///////////////////
 
 const renderer = new THREE.WebGLRenderer(
@@ -25,8 +33,9 @@ const renderer = new THREE.WebGLRenderer(
 );
 renderer.setSize( window.innerWidth, window.innerHeight );
 renderer.setPixelRatio( window.devicePixelRatio );
-renderer.setClearColor( 0x001144 );
+renderer.setClearColor( col_sky );
 renderer.shadowMap.enabled = true;
+
 /*
 // unable to change these on the fly:
 	THREE.BasicShadowMap
@@ -43,7 +52,7 @@ document.body.appendChild( renderer.domElement );
 let fov = 75.0;
 let aspect = window.innerWidth / window.innerHeight;
 let near = 0.1;
-let far = 100;
+let far = 1000.0;
 const camera = new THREE.PerspectiveCamera( fov, aspect, near, far );
 camera.position.x = -3.5;
 camera.position.y = 2.0;
@@ -54,42 +63,57 @@ cameraFolder.add( camera.position, 'z', 0.0, 10.0 );
 cameraFolder.close();
 
 const scene = new THREE.Scene();
-//scene.background = new THREE.Color( 0x000022 );
+//scene.background = new THREE.Color( 0x000022 ); // set by renderer
+
+///////////////////
+
+const cam_controls = new OrbitControls( camera, renderer.domElement );
+cam_controls.enabled = true;
+
+const obj_controls = new TransformControls( camera, renderer.domElement );
+obj_controls.setMode( 'rotate' );
+obj_controls.setSpace( 'local' );
+obj_controls.enabled = true;
+scene.add( obj_controls );
 
 ////////////////////////////////////////////////////////////////////////////////
 
-let shadow_resolution = 1024;
-let shadow_radius = 2.0; // no effect with PCFSoftShadowMap
-let shadow_bias = 0.00001;
+const hemiLight = new THREE.HemisphereLight( col_sky, col_ground, 1.0 );
 
+// Override orientation:
+// hemiLight.position.x = 1.0;
+// hemiLight.position.y = 0.0;
+// hemiLight.position.z = 0.0;
+
+scene.add( hemiLight );
+
+///////////////////
+
+let shadow_resolution = 1024;
+let shadow_radius = 4.0; // no effect with PCFSoftShadowMap
+let shadow_bias = 0.00001;
 
 // dirLight.shadow.blurSamples : Integer... The amount of samples to use when blurring a VSM shadow map.
 // dirLight.normalBias : Float... The default is 0. Increasing this value can be used to reduce shadow acne
 
-// dirLight.shadowDarkness = 0.5;
-// dirLight.shadowCameraNear = 1.0;
-// dirLight.shadowCameraFar = 15.0;
-// dirLight.shadowCameraLeft = -5;
-// dirLight.shadowCameraRight = 5;
-// dirLight.shadowCameraTop = 5;
-// dirLight.shadowCameraBottom = -5;
-
-const dirLight = new THREE.DirectionalLight( 0xddeeff, 1 );
+const dirLight = new THREE.DirectionalLight( col_rear, 1 );
 dirLight.position.set( -2.0, 5.0, -10.0 );
 dirLight.target.position.set( 0.0, 0.0, 0.0 );
 dirLight.castShadow = true;
-
 dirLight.shadow.radius = shadow_radius;
 dirLight.shadow.bias = shadow_bias;
 dirLight.shadow.mapSize.width = shadow_resolution;
 dirLight.shadow.mapSize.height = shadow_resolution;
 dirLight.shadow.camera.near = 5.0;
 dirLight.shadow.camera.far = 18.0;
-
+dirLight.shadow.camera.left = -5.0;
+dirLight.shadow.camera.right = 5.0;
+dirLight.shadow.camera.bottom = -5.0;
+dirLight.shadow.camera.top = 5.0;
 scene.add( dirLight );
 
 const dlh_radius = 1.0;
-const dir_light_helper = new THREE.DirectionalLightHelper( dirLight, dlh_radius );
+const dir_light_helper = new THREE.DirectionalLightHelper( dirLight, dlh_radius, 0xffffff );
 dir_light_helper.visible = false;
 scene.add( dir_light_helper );
 
@@ -106,13 +130,13 @@ let spot_penumbra = 0.25;
 let spot_decay = 1.0;
 
 const spotLight = new THREE.SpotLight(
-	0xffeedd, spot_intensity, spot_distance,
+	col_spot,
+	spot_intensity, spot_distance,
 	spot_angle, spot_penumbra, spot_decay
 );
 spotLight.position.set( 4.0, 6.0, 5.0 );
 spotLight.target.position.set( 0.0, 0.0, 0.0 );
 spotLight.castShadow = true;
-
 spotLight.shadow.radius = shadow_radius;
 spotLight.shadow.bias = shadow_bias;
 spotLight.shadow.mapSize.width = shadow_resolution;
@@ -120,7 +144,6 @@ spotLight.shadow.mapSize.height = shadow_resolution;
 spotLight.shadow.camera.near = 4.0;
 spotLight.shadow.camera.far = 15.0;
 spotLight.shadow.camera.fov = 45.0;
-
 scene.add( spotLight );
 
 const spot_light_helper = new THREE.SpotLightHelper( spotLight );
@@ -132,30 +155,70 @@ spot_shadow_helper.visible = false;
 scene.add( spot_shadow_helper );
 
 ////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+// GROUND PLANE BACKGROUND:
 
 const plane = new THREE.Mesh(
 	new THREE.PlaneGeometry( 10.0, 10.0, 10, 10 ),
-	new THREE.MeshStandardMaterial( { color: 0x777777 } )
+	new THREE.MeshStandardMaterial( { color: 0x555555 } )
 );
 plane.receiveShadow = true;
-plane.translateY( -1.0 );
+plane.translateY( -1.01 );
 plane.rotateX( -Math.PI / 2.0 );
 scene.add( plane );
 
-const underplane = new THREE.Mesh(
+const undergrid = new THREE.Mesh(
 	new THREE.PlaneGeometry( 10.0, 10.0, 10, 10 ),
 	new THREE.MeshBasicMaterial(
 		{
-			color: 0x777777,
+			color: 0x000000,
 			wireframe: true
 		}
 	)
 );
-underplane.translateY( -1.0 );
-underplane.rotateX( -Math.PI / 2.0 );
-scene.add( underplane );
+undergrid.translateY( -1.001 );
+undergrid.rotateX( -Math.PI / 2.0 );
+scene.add( undergrid );
+
+const outergrid = new THREE.Mesh(
+	new THREE.PlaneGeometry( 50.0, 50.0, 5, 5 ),
+	new THREE.MeshBasicMaterial(
+		{
+			color: 0x555555,
+			wireframe: true
+		}
+	)
+);
+outergrid.translateY( -1.0 );
+outergrid.rotateX( -Math.PI / 2.0 );
+scene.add( outergrid );
+
+const outerplane = new THREE.Mesh(
+	new THREE.CircleGeometry( 500.0, 32 ),
+	new THREE.MeshBasicMaterial(
+		{
+			color: 0x000000
+		}
+	)
+);
+outerplane.translateY( -1.02 );
+outerplane.rotateX( -Math.PI / 2.0 );
+scene.add( outerplane );
+
+const outerground = new THREE.Mesh(
+	new THREE.CylinderGeometry( 500.0, 500.0, 1000.0, 8, 1, true ),
+	new THREE.MeshPhongMaterial(
+		{
+			color: 0x000000,
+			side: THREE.BackSide
+		}
+	)
+);
+outerground.translateY( -501.2 );
+scene.add( outerground );
 
 ///////////////////
+// OBJECTS TO MANIPULATE:
 
 const pickable_targets = [];
 
@@ -171,10 +234,12 @@ scene.add( cube );
 pickable_targets.push( cube );
 
 const cylinder = new THREE.Mesh(
-	new THREE.CylinderGeometry( 0.75, 0.75, 2.0, 32, 1 ),
-	new THREE.MeshStandardMaterial(
+	new THREE.CylinderGeometry( 0.75, 0.75, 2.0, 512, 1 ),
+	new THREE.MeshPhongMaterial(
 		{
 			color: 0xffffff,
+			specular: 0xffffff, // dfl 0x111111
+			shininess: 2048, 	// dfl 30
 			flatShading: true
 		}
 	)
@@ -186,11 +251,15 @@ cylinder.translateZ( -2.0 );
 scene.add( cylinder );
 pickable_targets.push( cylinder );
 
+const ball_res = 12;
+
 const ball = new THREE.Mesh(
-	new THREE.IcosahedronGeometry( 1.0, 1 ),
-	new THREE.MeshStandardMaterial(
+	new THREE.IcosahedronGeometry( 1.0, ball_res ),
+	new THREE.MeshPhongMaterial(
 		{
 			color: 0xffffff,
+			specular: 0x7f7f7f, // dfl 0x111111
+			shininess: 8, 	// dfl 30
 			flatShading: true
 		}
 	)
@@ -204,17 +273,7 @@ scene.add( ball );
 pickable_targets.push( ball );
 
 ////////////////////////////////////////////////////////////////////////////////
-
-const cam_controls = new OrbitControls( camera, renderer.domElement );
-cam_controls.enabled = true;
-
-const obj_controls = new TransformControls( camera, renderer.domElement );
-obj_controls.setMode( 'rotate' );
-obj_controls.setSpace( 'local' );
-obj_controls.enabled = true;
-scene.add( obj_controls );
-
-///////////////////
+//////////////////////////////////////// ////////////////////////////////////////
 
 const raycaster = new THREE.Raycaster();
 let picked_object = null;
@@ -248,6 +307,7 @@ function get_picked_object()	{
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////// ////////////////////////////////////////
 
 window.addEventListener(
 	'mousedown',
@@ -263,6 +323,8 @@ window.addEventListener(
 			cam_controls.enabled = false;
 		}
 		else	{
+
+			picked_object = null;
 			obj_controls.detach();
 			cam_controls.enabled = true;
 		}
@@ -372,11 +434,11 @@ window.addEventListener(
 				renderer.state.reset();
 				break;
 */
-
 		}
 	}
 );
 
+//////////////////////////////////////// ////////////////////////////////////////
 //////////////////////////////////////// ////////////////////////////////////////
 
 function set_text_overlay( html_string )	{

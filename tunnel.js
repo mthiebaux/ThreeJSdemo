@@ -1,5 +1,6 @@
 
 const express = require( 'express' );
+const localtunnel = require( 'localtunnel' );
 const path = require( 'path' );
 
 const server = express();
@@ -11,18 +12,14 @@ server.use( '/jsm/', express.static( path.join( __dirname, 'node_modules/three/e
 /////////////////////////////////////////////////////////
 
 let port = 8080;
-
-function get_port_input_value()	{
-
-	if( process.argv.length > 2 )	{
-		port = process.argv[ 2 ];
-	}
-	return( port );
+if( process.argv.length > 2 )	{
+	port = process.argv[ 2 ];
 }
 
-server.listen(
-	get_port_input_value(),
+let listener = server.listen(
+	port,
 	() => {
+
 		console.log( " ┌───────────────────────────────────┐" );
 		console.log( " │                                   │" );
 		console.log( " │   Express Server:                 │" );
@@ -32,3 +29,20 @@ server.listen(
 		console.log( " └───────────────────────────────────┘" );
 	}
 );
+
+let tunneller = localtunnel(
+	{
+		port: port
+	},
+	( err, tunnel ) => {
+
+		console.log( " ┌───────────────────────────────────┐" );
+		console.log( " │                                   │" );
+		console.log( " │   Tunnel Server:                  │" );
+		console.log( " │                                   │" );
+		console.log( " │       " + tunnel.url );
+		console.log( " │                                   │" );
+		console.log( " └───────────────────────────────────┘" );
+	}
+);
+
