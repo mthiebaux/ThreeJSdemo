@@ -16,8 +16,8 @@ const gui_menu = new GUI();
 gui_menu.close();
 
 ////////////////////////////////////////////////////////////////////////////////
-// COLORS FOR LIGHTING
 
+// COLORS FOR LIGHTING
 const col_rear = 0x554433;
 const col_spot = 0xfff7aa;
 const col_sky = 0x7f8f9f;
@@ -49,31 +49,63 @@ document.body.appendChild( renderer.domElement );
 
 ///////////////////
 
-let fov = 75.0;
+let fov = 60.0;
 let aspect = window.innerWidth / window.innerHeight;
 let near = 0.1;
 let far = 1000.0;
 const camera = new THREE.PerspectiveCamera( fov, aspect, near, far );
-camera.position.x = -3.5;
-camera.position.y = 2.0;
-camera.position.z = 3.0;
+camera.position.fromArray( [ -3.5, 2.0, 3.0 ] );
 
 const cameraFolder = gui_menu.addFolder( 'Camera' );
-cameraFolder.add( camera.position, 'z', 0.0, 10.0 );
-cameraFolder.close();
+cameraFolder.add( camera.position, 'z', 0.0, 10.0 ).onChange( on_camera_view_change );
+cameraFolder.add( camera, 'fov', 1.0, 120.0 ).onChange( on_camera_view_change );
+//cameraFolder.close();
+
+const cam_controls = new OrbitControls( camera, renderer.domElement );
+cam_controls.enabled = true;
+cam_controls.addEventListener( 'change', on_camera_view_change );
+
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+
+let curr_picked_object = null;
+
+function d2r( deg ) { return( deg * 0.017453292519943 ); }
+function r2d( rad ) { return( rad * 57.295779513082321 ); }
+
+function on_gizmo_xform_change()	{
+
+	if( curr_picked_object )	{
+
+		let dist = camera.position.distanceTo( curr_picked_object.position );
+
+		let h = Math.tan( d2r( camera.fov ) * 0.5 ) * dist;
+
+		let ctrl_size = 2.5 / h;
+
+		obj_controls.setSize( ctrl_size );
+	}
+}
+
+function on_camera_view_change()	{
+
+	on_gizmo_xform_change();
+
+	camera.updateProjectionMatrix();
+}
+
+////////////////////////////////////////////////////////////////////////////////
 
 const scene = new THREE.Scene();
 //scene.background = new THREE.Color( 0x000022 ); // set by renderer
 
 ///////////////////
 
-const cam_controls = new OrbitControls( camera, renderer.domElement );
-cam_controls.enabled = true;
-
 const obj_controls = new TransformControls( camera, renderer.domElement );
 obj_controls.setMode( 'rotate' );
 obj_controls.setSpace( 'local' );
 obj_controls.enabled = true;
+obj_controls.addEventListener( 'change', on_gizmo_xform_change );
 scene.add( obj_controls );
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -276,7 +308,6 @@ pickable_targets.push( ball );
 //////////////////////////////////////// ////////////////////////////////////////
 
 const raycaster = new THREE.Raycaster();
-let picked_object = null;
 
 function get_picked_object()	{
 
@@ -315,16 +346,16 @@ window.addEventListener(
 
 		let pick = get_picked_object();
 		if( pick !== null )	{
-			if( pick !== picked_object )	{
+			if( pick !== curr_picked_object )	{
 
-				picked_object = pick;
-				obj_controls.attach( picked_object );
+				curr_picked_object = pick;
+				obj_controls.attach( curr_picked_object );
 			}
 			cam_controls.enabled = false;
 		}
 		else	{
 
-			picked_object = null;
+			curr_picked_object = null;
 			obj_controls.detach();
 			cam_controls.enabled = true;
 		}
