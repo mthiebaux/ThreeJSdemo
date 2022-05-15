@@ -6,15 +6,9 @@ import { GUI } from './jsm/libs/lil-gui.module.min.js';
 import { OrbitControls } from './jsm/controls/OrbitControls.js';
 import { TransformControls } from './jsm/controls/TransformControls.js';
 
+//import { RectAreaLightHelper }  from `./jsm/helpers/RectAreaLightHelper.js`;
+
 ////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////
-
-const stats = Stats();
-//document.body.appendChild( stats.domElement );
-
-const gui_menu = new GUI();
-gui_menu.close();
-
 ////////////////////////////////////////////////////////////////////////////////
 
 // COLORS FOR LIGHTING
@@ -24,6 +18,14 @@ const col_sky = 0x7f8f9f;
 const col_ground = 0x241f1d; // for hemisphere light
 
 ///////////////////
+
+const stats = Stats();
+//document.body.appendChild( stats.domElement );
+
+const gui_menu = new GUI();
+gui_menu.close();
+
+////////////////////////////////////////////////////////////////////////////////
 
 const renderer = new THREE.WebGLRenderer(
 	{
@@ -110,14 +112,17 @@ scene.add( obj_controls );
 
 ////////////////////////////////////////////////////////////////////////////////
 
-const hemiLight = new THREE.HemisphereLight( col_sky, col_ground, 1.0 );
-
-// Override orientation:
-// hemiLight.position.x = 1.0;
-// hemiLight.position.y = 0.0;
-// hemiLight.position.z = 0.0;
-
-scene.add( hemiLight );
+if( 0 )	{
+	const hemiLight = new THREE.HemisphereLight( 0x5fafff, col_ground, 1.0 );
+	hemiLight.position.x = 0.0;
+	hemiLight.position.y = 0.5;
+	hemiLight.position.z = -1.0;
+}
+else
+if( 1 )	{
+	const hemiLight = new THREE.HemisphereLight( col_sky, col_ground, 1.0 );
+	scene.add( hemiLight );
+}
 
 ///////////////////
 
@@ -128,181 +133,302 @@ let shadow_bias = 0.00001;
 // dirLight.shadow.blurSamples : Integer... The amount of samples to use when blurring a VSM shadow map.
 // dirLight.normalBias : Float... The default is 0. Increasing this value can be used to reduce shadow acne
 
-const dirLight = new THREE.DirectionalLight( col_rear, 1 );
-dirLight.position.set( -2.0, 5.0, -10.0 );
-dirLight.target.position.set( 0.0, 0.0, 0.0 );
-dirLight.castShadow = true;
-dirLight.shadow.radius = shadow_radius;
-dirLight.shadow.bias = shadow_bias;
-dirLight.shadow.mapSize.width = shadow_resolution;
-dirLight.shadow.mapSize.height = shadow_resolution;
-dirLight.shadow.camera.near = 5.0;
-dirLight.shadow.camera.far = 18.0;
-dirLight.shadow.camera.left = -5.0;
-dirLight.shadow.camera.right = 5.0;
-dirLight.shadow.camera.bottom = -5.0;
-dirLight.shadow.camera.top = 5.0;
-scene.add( dirLight );
+let dir_shadow_helper = null;
 
-const dlh_radius = 1.0;
-const dir_light_helper = new THREE.DirectionalLightHelper( dirLight, dlh_radius, 0xffffff );
-dir_light_helper.visible = false;
-scene.add( dir_light_helper );
+if( 1 )	{
 
-const dir_shadow_helper = new THREE.CameraHelper( dirLight.shadow.camera );
-dir_shadow_helper.visible = false;
-scene.add( dir_shadow_helper );
+//	const dirLight = new THREE.DirectionalLight( 0xffcf1f, 1 );
+	const dirLight = new THREE.DirectionalLight( col_rear, 1 );
+
+	dirLight.position.set( -2.0, 4.5, -10.0 );
+	dirLight.target.position.set( 0.0, 0.0, 0.0 );
+	dirLight.castShadow = true;
+	dirLight.shadow.radius = shadow_radius;
+	dirLight.shadow.bias = shadow_bias;
+	dirLight.shadow.mapSize.width = shadow_resolution;
+	dirLight.shadow.mapSize.height = shadow_resolution;
+	dirLight.shadow.camera.near = 2.0;
+	dirLight.shadow.camera.far = 18.0;
+	dirLight.shadow.camera.left = -6.0;
+	dirLight.shadow.camera.right = 6.0;
+	dirLight.shadow.camera.bottom = -5.0;
+	dirLight.shadow.camera.top = 5.0;
+	scene.add( dirLight );
+
+	const dlh_radius = 1.0;
+	const dir_light_helper = new THREE.DirectionalLightHelper( dirLight, dlh_radius, 0xffffff );
+	dir_light_helper.visible = false;
+	scene.add( dir_light_helper );
+
+	dir_shadow_helper = new THREE.CameraHelper( dirLight.shadow.camera );
+	dir_shadow_helper.visible = false;
+	scene.add( dir_shadow_helper );
+}
 
 ///////////////////
 
-let spot_intensity = 2.0;
-let spot_distance = 15.0;
-let spot_angle = Math.PI / 8.0;
-let spot_penumbra = 0.25;
-let spot_decay = 1.0;
+let spot_shadow_helper = null;
 
-const spotLight = new THREE.SpotLight(
-	col_spot,
-	spot_intensity, spot_distance,
-	spot_angle, spot_penumbra, spot_decay
-);
-spotLight.position.set( 4.0, 6.0, 5.0 );
-spotLight.target.position.set( 0.0, 0.0, 0.0 );
-spotLight.castShadow = true;
-spotLight.shadow.radius = shadow_radius;
-spotLight.shadow.bias = shadow_bias;
-spotLight.shadow.mapSize.width = shadow_resolution;
-spotLight.shadow.mapSize.height = shadow_resolution;
-spotLight.shadow.camera.near = 4.0;
-spotLight.shadow.camera.far = 15.0;
-spotLight.shadow.camera.fov = 45.0;
-scene.add( spotLight );
+if( 1 )	{
+	let spot_intensity = 2.0;
+	let spot_distance = 15.0;
+	let spot_angle = Math.PI / 8.0;
+	let spot_penumbra = 0.25;
+	let spot_decay = 1.0;
 
-const spot_light_helper = new THREE.SpotLightHelper( spotLight );
-spot_light_helper.visible = false;
-scene.add( spot_light_helper );
+	const spotLight = new THREE.SpotLight(
+		col_spot,
+		spot_intensity, spot_distance,
+		spot_angle, spot_penumbra, spot_decay
+	);
+	spotLight.position.set( 4.0, 6.0, 5.0 );
+	spotLight.target.position.set( 0.0, 0.0, 0.0 );
+	spotLight.castShadow = true;
+	spotLight.shadow.radius = shadow_radius;
+	spotLight.shadow.bias = shadow_bias;
+	spotLight.shadow.mapSize.width = shadow_resolution;
+	spotLight.shadow.mapSize.height = shadow_resolution;
+	spotLight.shadow.camera.near = 4.0;
+	spotLight.shadow.camera.far = 15.0;
+	spotLight.shadow.camera.fov = 45.0;
+	scene.add( spotLight );
 
-const spot_shadow_helper = new THREE.CameraHelper( spotLight.shadow.camera );
-spot_shadow_helper.visible = false;
-scene.add( spot_shadow_helper );
+	const spot_light_helper = new THREE.SpotLightHelper( spotLight );
+	spot_light_helper.visible = false;
+	scene.add( spot_light_helper );
+
+	spot_shadow_helper = new THREE.CameraHelper( spotLight.shadow.camera );
+	spot_shadow_helper.visible = false;
+	scene.add( spot_shadow_helper );
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 // GROUND PLANE BACKGROUND:
 
-const plane = new THREE.Mesh(
-	new THREE.PlaneGeometry( 10.0, 10.0, 10, 10 ),
-	new THREE.MeshStandardMaterial( { color: 0x555555 } )
-);
-plane.receiveShadow = true;
-plane.translateY( -1.01 );
-plane.rotateX( -Math.PI / 2.0 );
-scene.add( plane );
+if( 1 )	{
+	const plane = new THREE.Mesh(
+		new THREE.PlaneGeometry( 10.0, 10.0, 1, 1 ),
+		new THREE.MeshStandardMaterial( { color: 0x555555 } )
+	);
+	plane.receiveShadow = true;
+	plane.translateY( -1.01 );
+	plane.rotateX( -Math.PI / 2.0 );
+	scene.add( plane );
 
-const undergrid = new THREE.Mesh(
-	new THREE.PlaneGeometry( 10.0, 10.0, 10, 10 ),
-	new THREE.MeshBasicMaterial(
-		{
-			color: 0x000000,
-			wireframe: true
-		}
-	)
-);
-undergrid.translateY( -1.001 );
-undergrid.rotateX( -Math.PI / 2.0 );
-scene.add( undergrid );
+	const undergrid = new THREE.Mesh(
+		new THREE.PlaneGeometry( 10.0, 10.0, 10, 10 ),
+		new THREE.MeshBasicMaterial(
+			{
+				color: 0x000000,
+				wireframe: true
+			}
+		)
+	);
+	undergrid.translateY( -1.001 );
+	undergrid.rotateX( -Math.PI / 2.0 );
+	scene.add( undergrid );
+}
 
-const outergrid = new THREE.Mesh(
-	new THREE.PlaneGeometry( 50.0, 50.0, 5, 5 ),
-	new THREE.MeshBasicMaterial(
-		{
-			color: 0x555555,
-			wireframe: true
-		}
-	)
-);
-outergrid.translateY( -1.0 );
-outergrid.rotateX( -Math.PI / 2.0 );
-scene.add( outergrid );
+if( 1 )	{
+	const outergrid = new THREE.Mesh(
+		new THREE.PlaneGeometry( 50.0, 50.0, 5, 5 ),
+		new THREE.MeshBasicMaterial(
+			{
+				color: 0x555555,
+				wireframe: true
+			}
+		)
+	);
+	outergrid.translateY( -1.0 );
+	outergrid.rotateX( -Math.PI / 2.0 );
+	scene.add( outergrid );
 
-const outerplane = new THREE.Mesh(
-	new THREE.CircleGeometry( 500.0, 32 ),
-	new THREE.MeshBasicMaterial(
-		{
-			color: 0x000000
-		}
-	)
-);
-outerplane.translateY( -1.02 );
-outerplane.rotateX( -Math.PI / 2.0 );
-scene.add( outerplane );
+	const outerplane = new THREE.Mesh(
+		new THREE.CircleGeometry( 500.0, 32 ),
+		new THREE.MeshBasicMaterial(
+			{
+				color: 0x000000
+			}
+		)
+	);
+	outerplane.translateY( -1.02 );
+	outerplane.rotateX( -Math.PI / 2.0 );
+	scene.add( outerplane );
 
-const outerground = new THREE.Mesh(
-	new THREE.CylinderGeometry( 500.0, 500.0, 1000.0, 8, 1, true ),
-	new THREE.MeshPhongMaterial(
-		{
-			color: 0x000000,
-			side: THREE.BackSide
-		}
-	)
-);
-outerground.translateY( -501.2 );
-scene.add( outerground );
+	const outerground = new THREE.Mesh(
+		new THREE.CylinderGeometry( 500.0, 500.0, 1000.0, 8, 1, true ),
+		new THREE.MeshPhongMaterial(
+			{
+				color: 0x000000,
+				side: THREE.BackSide
+			}
+		)
+	);
+	outerground.translateY( -501.2 );
+	scene.add( outerground );
+}
 
-///////////////////
+////////////////////////////////////////////////////////////////////////////////
+// EXPERIMENTAL WINDOW DAYLIGHT:
+
+if( 0 )	{
+
+	const intensity = 100.0;
+	const rectLight = new THREE.RectAreaLight( 0x0000ff, intensity,  4.0, 4.0 );
+	rectLight.position.set( 0.0, 3.0, -4.9 );
+	rectLight.lookAt( 0.0, 3.0, 0.0 );
+	scene.add( rectLight );
+
+//	const rectLightHelper = new RectAreaLightHelper( rectLight );
+//	rectLight.add( rectLightHelper );
+}
+
+if( 0 )	{
+	const winmaskgeomA = new THREE.PlaneGeometry( 3.0, 8.0, 3, 8 );
+
+	const winmask0 = new THREE.Mesh(
+		winmaskgeomA,
+		new THREE.MeshStandardMaterial( { color: 0xffffff, side: THREE.DoubleSide } )
+	);
+	winmask0.castShadow = true;
+	winmask0.receiveShadow = true;
+	winmask0.translateX( -3.5 );
+	winmask0.translateY( 3.0 );
+	winmask0.translateZ( -5.0 );
+	scene.add( winmask0 );
+
+	const winmaskwire0 = new THREE.Mesh(
+		winmaskgeomA,
+		new THREE.MeshBasicMaterial( { color: 0x000000, wireframe: true } )
+	);
+	winmaskwire0.translateX( -3.5 );
+	winmaskwire0.translateY( 3.0 );
+	winmaskwire0.translateZ( -5.0 );
+	scene.add( winmaskwire0 );
+
+	const winmask1 = new THREE.Mesh(
+		winmaskgeomA,
+		new THREE.MeshStandardMaterial( { color: 0xffffff, side: THREE.DoubleSide } )
+	);
+	winmask1.castShadow = true;
+	winmask1.receiveShadow = true;
+	winmask1.translateX( 3.5 );
+	winmask1.translateY( 3.0 );
+	winmask1.translateZ( -5.0 );
+	scene.add( winmask1 );
+
+	const winmaskwire1 = new THREE.Mesh(
+		winmaskgeomA,
+		new THREE.MeshBasicMaterial( { color: 0x000000, wireframe: true } )
+	);
+	winmaskwire1.translateX( 3.5 );
+	winmaskwire1.translateY( 3.0 );
+	winmaskwire1.translateZ( -5.0 );
+	scene.add( winmaskwire1 );
+
+	const winmaskgeomB = new THREE.PlaneGeometry( 4.0, 2.0, 4, 2 );
+
+	const winmask2 = new THREE.Mesh(
+		winmaskgeomB,
+		new THREE.MeshStandardMaterial( { color: 0xffffff, side: THREE.DoubleSide } )
+	);
+	winmask2.castShadow = true;
+	winmask2.receiveShadow = true;
+	//winmask2.translateX( -3.5 );
+	//winmask2.translateY( 3.0 );
+	winmask2.translateZ( -5.0 );
+	scene.add( winmask2 );
+
+	const winmaskwire2 = new THREE.Mesh(
+		winmaskgeomB,
+		new THREE.MeshBasicMaterial( { color: 0x000000, wireframe: true } )
+	);
+	//winmaskwire2.translateX( -3.5 );
+	//winmaskwire2.translateY( 3.0 );
+	winmaskwire2.translateZ( -5.0 );
+	scene.add( winmaskwire2 );
+
+	const winmask3 = new THREE.Mesh(
+		winmaskgeomB,
+		new THREE.MeshStandardMaterial( { color: 0xffffff, side: THREE.DoubleSide } )
+	);
+	winmask3.castShadow = true;
+	winmask3.receiveShadow = true;
+	winmask3.translateY( 6.0 );
+	winmask3.translateZ( -5.0 );
+	scene.add( winmask3 );
+
+	const winmaskwire3 = new THREE.Mesh(
+		winmaskgeomB,
+		new THREE.MeshBasicMaterial( { color: 0x000000, wireframe: true } )
+	);
+	winmaskwire3.translateY( 6.0 );
+	winmaskwire3.translateZ( -5.0 );
+	scene.add( winmaskwire3 );
+}
+
+////////////////////////////////////////////////////////////////////////////////
 // OBJECTS TO MANIPULATE:
 
 const pickable_targets = [];
 
-const cube = new THREE.Mesh(
-	new THREE.BoxGeometry( 2.0, 2.0, 2.0 ),
-	new THREE.MeshStandardMaterial( { color: 0xffffff } )
-);
-// cube.name = "my cube!"; // scene.getObjectByName( "" );
-cube.castShadow = true;
-cube.receiveShadow = true;
-cube.add( new THREE.AxesHelper( 3.0 ) );
-scene.add( cube );
-pickable_targets.push( cube );
+if( 1 )	{
+	const cube = new THREE.Mesh(
+		new THREE.BoxGeometry( 2.0, 2.0, 2.0 ),
+		new THREE.MeshStandardMaterial(
+			{
+				color: 0xffffff,
+				roughness: 1.0,
+				flatShading: true
+			}
+		)
+	);
+	// cube.name = "my cube!"; // scene.getObjectByName( "" );
+	cube.castShadow = true;
+	cube.receiveShadow = true;
+	cube.add( new THREE.AxesHelper( 3.0 ) );
+	scene.add( cube );
+	pickable_targets.push( cube );
 
-const cylinder = new THREE.Mesh(
-	new THREE.CylinderGeometry( 0.75, 0.75, 2.0, 512, 1 ),
-	new THREE.MeshPhongMaterial(
-		{
-			color: 0xffffff,
-			specular: 0xffffff, // dfl 0x111111
-			shininess: 2048, 	// dfl 30
-			flatShading: true
-		}
-	)
-);
-cylinder.castShadow = true;
-cylinder.receiveShadow = true;
-cylinder.translateX( -1.5 );
-cylinder.translateZ( -2.0 );
-scene.add( cylinder );
-pickable_targets.push( cylinder );
+	const cylinder = new THREE.Mesh(
+		new THREE.CylinderGeometry( 0.75, 0.75, 2.0, 512, 1 ),
+		new THREE.MeshPhongMaterial(
+			{
+				color: 0xffffff,
+				specular: 0xffffff, // dfl 0x111111
+				shininess: 2048, 	// dfl 30
+				flatShading: true
+			}
+		)
+	);
+	cylinder.castShadow = true;
+	cylinder.receiveShadow = true;
+	cylinder.translateX( -1.5 );
+	cylinder.translateZ( -2.0 );
+	scene.add( cylinder );
+	pickable_targets.push( cylinder );
 
-const ball_res = 12;
-
-const ball = new THREE.Mesh(
-	new THREE.IcosahedronGeometry( 1.0, ball_res ),
-	new THREE.MeshPhongMaterial(
-		{
-			color: 0xffffff,
-			specular: 0x7f7f7f, // dfl 0x111111
-			shininess: 8, 	// dfl 30
-			flatShading: true
-		}
-	)
-);
-ball.castShadow = true;
-ball.receiveShadow = true;
-ball.translateX( 1.25 );
-ball.translateY( 0.75 );
-ball.translateZ( 1.0 );
-scene.add( ball );
-pickable_targets.push( ball );
+	const ball_res = 12;
+	const ball = new THREE.Mesh(
+		new THREE.IcosahedronGeometry( 1.0, ball_res ),
+		new THREE.MeshPhongMaterial(
+			{
+				color: 0xffffff,
+				specular: 0x7f7f7f, // dfl 0x111111
+				shininess: 8, 	// dfl 30
+				flatShading: true
+			}
+		)
+	);
+	ball.castShadow = true;
+	ball.receiveShadow = true;
+	ball.translateX( 1.25 );
+	ball.translateY( 0.75 );
+	ball.translateZ( 1.0 );
+	scene.add( ball );
+	pickable_targets.push( ball );
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////// ////////////////////////////////////////
@@ -409,18 +535,20 @@ window.addEventListener(
 
 			case 'KeyL':
 
-				if( dir_shadow_helper.visible )	{
-					dir_shadow_helper.visible = false;
-					spot_shadow_helper.visible = true;
-				}
-				else
-				if( spot_shadow_helper.visible )	{
-					dir_shadow_helper.visible = false;
-					spot_shadow_helper.visible = false;
-				}
-				else	{
-					dir_shadow_helper.visible = true;
-					spot_shadow_helper.visible = false;
+				if( dir_shadow_helper && spot_shadow_helper )	{
+					if( dir_shadow_helper.visible )	{
+						dir_shadow_helper.visible = false;
+						spot_shadow_helper.visible = true;
+					}
+					else
+					if( spot_shadow_helper.visible )	{
+						dir_shadow_helper.visible = false;
+						spot_shadow_helper.visible = false;
+					}
+					else	{
+						dir_shadow_helper.visible = true;
+						spot_shadow_helper.visible = false;
+					}
 				}
 				break;
 
